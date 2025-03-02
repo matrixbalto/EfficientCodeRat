@@ -1,0 +1,12 @@
+Problem:
+$problem_text
+
+
+Please format your final code as method of 'class Solution(object):', as shown below:
+```
+$prompt
+```
+
+
+Solution:
+Let's think step by step.

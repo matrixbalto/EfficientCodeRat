@@ -1,0 +1,283 @@
+You are a skilled software engineer who is extremely familiar with python and advanced algorithms. Complete python3 code to solve the following coding problem. Please ensure that your response is both correct and as efficient as possible. The run time should be minimized.
+Ensure your final code response is formatted **strictly** as follows:
+
+```
+python code here
+```
+
+Here are some expert demonstrations:
+
+
+
+
+Problem: Given an m x n matrix, return all elements of the matrix in spiral order.
+
+Example 1:
+
+Input: matrix = [[1,2,3],[4,5,6],[7,8,9]]
+Output: [1,2,3,6,9,8,7,4,5]\n\n\nExample 2:
+
+Input: matrix = [[1,2,3,4],[5,6,7,8],[9,10,11,12]]
+Output: [1,2,3,4,8,12,11,10,9,5,6,7]
+
+
+Constraints:
+
+m == matrix.length
+n == matrix[i].length
+1 <= m, n <= 10
+-100 <= matrix[i][j] <= 100
+
+
+Solution:
+
+OK, let me see: start with matrix boundaries, define an array for results, and loop through each spiral segment, updating boundaries as each segment is done.
+
+Progressing through the spiral
+
+OK, let me see: decrement the right boundary, explore from right to left on the bottom row, then adjust the bottom boundary. This method effectively manages single rows or columns.
+
+Initialize four boundaries:
+
+top = 0 (index of the topmost row not yet traversed)
+bottom = m - 1 (index of the bottommost row not yet traversed)
+left = 0 (index of the leftmost column not yet traversed)
+right = n - 1 (index of the rightmost column not yet traversed)
+For our 3×3 example (m = 3, n = 3):
+
+top = 0
+bottom = 2
+left = 0
+right = 2
+Traverse from left to right across the top row, then move top down by 1.
+
+Before the traversal:
+top = 0, bottom = 2, left = 0, right = 2
+Traverse row 0, from column 0 to column 2:
+Elements: 1, 2, 3
+After collecting these, increment top because row 0 is done.
+
+
+Traverse from top to bottom down the right column, then move right left by 1.
+
+Before the traversal:
+top = 1, bottom = 2, left = 0, right = 2
+Traverse column 2, from row 1 to row 2:
+Elements: 6, 9
+After collecting these, decrement right.
+right = 1
+
+Traverse from right to left across the bottom row (if top <= bottom), then move bottom up by 1.
+
+Check: Is top <= bottom? Yes, since top = 1, bottom = 2.
+Before the traversal:
+top = 1, bottom = 2, left = 0, right = 1
+Traverse row 2, from column 1 down to column 0:
+Elements: 8, 7
+After collecting these, decrement bottom.
+bottom = 1
+
+Traverse from bottom to top up the left column (if left <= right), then move left right by 1.
+
+Check: Is left <= right? Yes, since left = 0, right = 1.
+Before the traversal:
+top = 1, bottom = 1, left = 0, right = 1
+Traverse column 0, from row 1 up to row 1 (just a single row here):
+Element: 4
+After collecting this, increment left.
+left = 1
+
+Repeat until top > bottom or left > right.
+
+After the first full cycle:
+top = 1, bottom = 1
+left = 1, right = 1
+We still have one valid cell left: (row=1, col=1) = 5.
+Following the same pattern:
+
+Left to right across row top=1: the only column is left=1.
+Collect 5.
+Then increment top → top = 2.
+Now top = 2 and bottom = 1, so top > bottom → Stop.
+The final collected spiral order is 
+[1,2,3,6,9,8,7,4,5].
+
+
+```
+class Solution(object):
+    def spiralOrder(matrix):
+        if not matrix or not matrix[0]:
+            return []
+        
+        result = []
+        
+        # Boundaries
+        top, bottom = 0, len(matrix) - 1
+        left, right = 0, len(matrix[0]) - 1
+        
+        # Traverse until these boundaries overlap or cross
+        while top <= bottom and left <= right:
+            # 1. Left to Right
+            for col in range(left, right + 1):
+                result.append(matrix[top][col])
+            top += 1
+            
+            # 2. Top to Bottom
+            for row in range(top, bottom + 1):
+                result.append(matrix[row][right])
+            right -= 1
+            
+            # 3. Right to Left (only if top <= bottom)
+            if top <= bottom:
+                for col in range(right, left - 1, -1):
+                    result.append(matrix[bottom][col])
+                bottom -= 1
+            
+            # 4. Bottom to Top (only if left <= right)
+            if left <= right:
+                for row in range(bottom, top - 1, -1):
+                    result.append(matrix[row][left])
+                left += 1
+        
+        return result
+```
+
+
+
+
+Problem: Given two strings s and t, return the number of distinct subsequences of s which equals t.
+
+The test cases are generated so that the answer fits on a 32-bit signed integer.
+
+
+Example 1:
+
+Input: s = "rabbbit", t = "rabbit"
+Output: 3
+Explanation:
+As shown below, there are 3 ways you can generate "rabbit" from s.
+rabbbit
+rabbbit
+rabbbit
+
+
+Example 2:
+
+Input: s = "babgbag", t = "bag"
+Output: 5
+Explanation:
+As shown below, there are 5 ways you can generate "bag" from s.
+babgbag
+babgbag
+babgbag
+babgbag
+babgbag
+
+
+Constraints:
+
+1 <= s.length, t.length <= 1000
+s and t consist of English letters.
+
+
+Solution:
+
+We want to count all the subsequences (not substrings) of s that match exactly with t.
+
+A subsequence of a string is formed by deleting zero or more characters from the string without changing the relative positions of the remaining characters.
+For example, "abc" has subsequences like "a", "b", "c", "ab", "ac", "bc", and "abc".
+Key point: The problem states "distinct" subsequences — but once we set up our DP logic, we'll handle the counting so duplicates are inherently accounted for correctly.
+
+We’ll use a 2D DP array 
+dp with dimensions (len(s)+1)×(len(t)+1).
+
+Let m=len(s) and n=len(t).
+dp[i][j] will represent the number of distinct subsequences of the first 𝑖
+i characters of s (i.e., s[0..i−1]) that form the first
+j characters of t (i.e., t[0..j−1]).
+Why dp[i][j] with these indices?
+We often add a leading row/column to handle the "empty subsequence" cases cleanly, so dp[0][∗] and 
+dp[∗][0] represent situations with empty prefixes.
+3. Base Cases
+Empty t (i.e.,j=0):
+
+dp[i][0]=1 for every i∈[0…m].
+Reason: There is exactly 1 way to form an empty subsequence from any prefix of 𝑠
+s: choose no characters at all.
+Empty s (i.e.,i=0) but non-empty t (i.e., j>0):
+
+dp[0][j]=0 for every j∈[1…n].
+Reason: You cannot form a non-empty target sequence 𝑡 from an empty string 𝑠.
+Putting this together:
+
+dp[0][0]=1 (one way to form empty from empty).
+dp[0][j]=0 for 𝑗>0. 
+dp[i][0]=1 for i≥0.
+
+
+4. Recurrence Relation
+To fill the DP table beyond the base cases, consider dp[i][j] (i.e., how many ways to form 
+t[:j] from s[:i]):
+
+If s[i−1] matches t[j−1]:
+
+dp[i][j]=dp[i−1][j−1](+)dp[i−1][j].
+dp[i−1][j−1]: Number of ways if we use this matching character.
+dp[i−1][j]: Number of ways if we skip this character in 𝑠.
+If s[i−1] does not match t[j−1]:
+dp[i][j]=dp[i−1][j].
+We can only skip the current character in s since it doesn’t help us match
+t[j−1].
+
+5. Putting the Steps Into Action (Example)
+Example 1
+s="rabbbit", 
+t="rabbit"
+
+s: r (0), a (1), b (2), b (3), b (4), i (5), t (6)
+t: r (0), a (1), b (2), b (3), i (4), t (5)
+We construct a table 
+dp of size (7+1)×(6+1)(7+1)×(6+1) = 8×7
+8×7. Rows index from 0..7, columns index from 0..6.
+
+Base initialization:
+
+dp[i][0]=1 for 0≤i≤7.
+dp[0][j]=0 for 1≤j≤6.
+Then fill row by row (or column by column). Eventually, dp[7][6] will give the final answer.
+
+Without writing the entire matrix, the final result is dp[7][6]=3.
+That means there are 3 distinct ways to form "rabbit" from "rabbbit".
+
+Example 2 
+s="babgbag", 
+t="bag"
+
+dp size: (7+1)×(3+1)=8×4(7+1)×(3+1)=8×4.
+Final answer: dp[7][3]=5.
+Hence, there are 5 distinct subsequences of "babgbag" that form "bag."
+
+
+```
+class Solution(object):
+    def numDistinct(s, t):
+        m, n = len(s), len(t)
+        # dp[i][j] = number of distinct subsequences of s[:i] that form t[:j]
+        dp = [[0] * (n+1) for _ in range(m+1)]
+        
+        # Base case: dp[i][0] = 1 for all i
+        for i in range(m+1):
+            dp[i][0] = 1
+        
+        # Fill the table
+        for i in range(1, m+1):
+            for j in range(1, n+1):
+                if s[i-1] == t[j-1]:
+                    # Use the matching char + skip the char
+                    dp[i][j] = dp[i-1][j-1] + dp[i-1][j]
+                else:
+                    # Skip the char in s
+                    dp[i][j] = dp[i-1][j]
+        
+        return dp[m][n]
+```
